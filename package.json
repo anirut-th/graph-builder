@@ -1,0 +1,29 @@
+{
+  "name": "graph-builder",
+  "version": "1.0.0",
+  "description": "Library for build interactive graph using D3js and ThreeJS",
+  "main": "build/graph-builder.js",
+  "scripts": {
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anirut-th/graph-builder.git"
+  },
+  "author": "Anirut Thammawiset",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/anirut-th/graph-builder/issues"
+  },
+  "homepage": "https://github.com/anirut-th/graph-builder#readme",
+  "devDependencies": {
+    "@babel/core": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "babel-loader": "^8.2.2",
+    "webpack": "^5.15.0",
+    "webpack-cli": "^4.3.1"
+  },
+  "dependencies": {
+    "d3": "^6.3.1"
+  }
+}
