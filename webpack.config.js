@@ -6,7 +6,11 @@ module.exports = {
         filename: 'graph-builder.js',
         path: path.resolve(__dirname, 'build'),
         library: 'GraphBuilder',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd',
+        environment: {
+            arrowFunction: false,
+            bigIntLiteral: false
+        } 
     },
     module: {
         rules: [{

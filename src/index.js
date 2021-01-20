@@ -1,4 +1,4 @@
-import ScatterGraph from './ScatterGraph';
+import ScatterGraph from './ScatterGraph/index';
 
 export {
     ScatterGraph
