@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="main_graph"></div>
+    <script src="./build/graph-builder.js">
+    </script>
+    <script>
+        var graph = GraphBuilder.ScatterGraph("main_graph", 
+        {
+            title: {
+                text: "Ice Cream Sales vs Temperature",
+                font_size: 18
+            },
+            width: 500,
+            height: 500,
+            padding: {
+                top: 10,
+                bottom: 10,
+                left: 10,
+                right: 20
+            },
+
+            x_axis: {
+                scale: "linear",
+                min: 10,
+                max: 26,
+                name: "Temperature"
+            },
+            y_axis: {
+                scale: "linear",
+                min: 0,
+                max: 700,
+                name: "Sales"
+            },
+            series: [
+                {
+                    uid: "series1",
+                    name: "Year 2020",
+                    color: "#FF0000",
+                    marker: {
+                        shape: "circle",
+                        size: 3
+                    },
+                    datas: [
+                        { x: 14.2, y: 215 },
+                        { x: 16.4, y: 325 },
+                        { x: 11.9, y: 185 },
+                        { x: 15.2, y: 332 },
+                        { x: 18.5, y: 406 },
+                        { x: 22.1, y: 552 },
+                        { x: 19.4, y: 412 },
+                        { x: 25.1, y: 614 },
+                        { x: 23.4, y: 544 },
+                        { x: 18.1, y: 421 },
+                        { x: 22.6, y: 445 },
+                        { x: 17.2, y: 408 }
+                    ]
+                },
+                {
+                    uid: "series2",
+                    name: "Year 2021",
+                    color: "#00FF00",
+                    marker: {
+                        shape: "circle",
+                        size: 3
+                    },
+                    datas: [
+                        { x: 14.2, y: 235 },
+                        { x: 16.4, y: 335 },
+                        { x: 11.9, y: 145 },
+                        { x: 15.2, y: 352 },
+                        { x: 18.5, y: 466 },
+                        { x: 22.1, y: 582 },
+                        { x: 19.4, y: 472 },
+                        { x: 25.1, y: 694 },
+                        { x: 23.4, y: 504 },
+                        { x: 18.1, y: 441 },
+                        { x: 22.6, y: 445 },
+                        { x: 17.2, y: 488 }
+                    ]
+                }
+            ],
+            legend: {
+                position: "right",
+                width: 500,
+                line_height: 10
+            }
+        });
+        console.log(graph);
+    </script>
+</body>
+</html>
