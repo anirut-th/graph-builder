@@ -4,6 +4,9 @@ import RenderTextFromHtml from "../common/RenderTextFromHtml";
 import CreateAxis from "../common/CreateAxis";
 import CreateLegend from "./CreateLegend";
 import AddSeries from "./AddSeries";
+import { log10, Distance } from "../common/MathService";
+import * as Interactive from "./Interactive";
+
 function ScatterGraph(elementId, option) {
     option = initializeOption(option);
     let padding = option.padding;
@@ -150,44 +153,173 @@ function ScatterGraph(elementId, option) {
     let legendArea = CreateLegend(viewport, graph, option, legends);
     let legentAreaBbox = legendArea.node().getBBox();
 
+    for (var i in option.series) {
+        Interactive.setFocus(
+            plotArea,
+            legendArea.select(".legend-item[data-uid='" + option.series[i].uid + "']"),
+            option.series[i].uid,
+            option.series[i].color,
+            option.series[i].marker.size,
+            elementId
+        );
+    }
+
     //Update Axis Bbox
     xAxisBbox = axisX.node().getBBox();
     xAxisNameBbox = xAxisNameElement.node().getBBox();
     yAxisBbox = axisY.node().getBBox();
     yAxisNameBbox = yAxisNameElement.node().getBBox();
 
+    let currentScaleX = scaleX;
+    let currentScaleY = scaleY;
 
     let zoomX = d3.zoom()
-    .scaleExtent([.01, 100])  // This control how much you can unzoom (x0.01) and zoom (x100)
-    .translateExtent([[-100, -100], [option.width, option.height]])
-    .extent([[0, 0], [option.width, option.height]])
+    .scaleExtent([.1, 5])  // This control how much you can unzoom (x0.01) and zoom (x100)
     .on("zoom", function(){
         // recover the new scale
-        let newScaleX = d3.event.transform.rescaleX(scaleX);
-        scaleX = newScaleX;
+        let _scaleX = d3.event.transform.rescaleX(scaleX);
 
         // update axes with these new boundaries
-        axisX.call(d3.axisBottom(newScaleX));//.ticks(max_x, formatTick));
+        axisX.call(d3.axisBottom(_scaleX));
+        for (var i in option.series) {
+            d3
+                .selectAll("circle[data-uid='" + option.series[i].uid + "']")
+                .attr("cx", function (d) { return _scaleX(d.x); })
+                .attr("cy", function (d) { return currentScaleY(d.y); })
+        }
+        currentScaleX = _scaleX;
+    });
+    
+    let zoomY = d3.zoom()
+    .scaleExtent([.1, 5])
+    .on("zoom", function(){
+        // recover the new scale
+        let _scaleY = d3.event.transform.rescaleY(scaleY);
 
-        //hide focus
         graph.selectAll(".focus").style("display", "none");
+        // update axes with these new boundaries
+        axisY.call(d3.axisLeft(_scaleY));
+        for (var i in option.series) {
+            d3
+                .selectAll("circle[data-uid='" + option.series[i].uid + "']")
+                .attr("cx", function (d) { return currentScaleX(d.x); })
+                .attr("cy", function (d) { return _scaleY(d.y); })
+        }
+        currentScaleY = _scaleY;
+    });
+
+    let zoomXY = d3.zoom()
+    .scaleExtent([.1, 5])
+    .on("zoom", function(){
+        // recover the new scale
+        let _scaleX = d3.event.transform.rescaleX(scaleX);
+        let _scaleY = d3.event.transform.rescaleY(scaleY);
+        
+        graph.selectAll(".focus").style("display", "none");
+
+        // update axes with these new boundaries
+        axisX.call(d3.axisBottom(_scaleX));
+        axisY.call(d3.axisLeft(_scaleY));
 
         for (var i in option.series) {
             d3
                 .selectAll("circle[data-uid='" + option.series[i].uid + "']")
-                .attr("cx", function (d) { return scaleX(d.x); })
+                .attr("cx", function (d) { return _scaleX(d.x); })
+                .attr("cy", function (d) { return _scaleY(d.y); })
         }
+        currentScaleY = _scaleY;
+        currentScaleX = _scaleX;
     });
-    console.log(xAxisBbox)
-    let zoomPanelX =  graph.append("rect")
+
+    // let zoomXPanel =  graph.append("rect")
+    //                 .attr("fill-opacity", 0)
+    //                 .attr("width", xAxisBbox.width)
+    //                 .attr("height", xAxisBbox.height + xAxisNameBbox.height)
+    //                 .attr("transform", "translate("+ xAxisBbox.x + "," + (option.height - padding.bottom - xAxisBbox.height - xAxisNameBbox.height) + ")")
+    //                 .on("mouseover", function() {
+    //                     scaleX = currentScaleX;
+    //                 })
+    //                 .call(zoomX);
+
+    // let zoomYPanel =  graph.append("rect")
+    //                 .attr("fill-opacity", 0)
+    //                 .attr("width", yAxisBbox.width + yAxisNameBbox.height)
+    //                 .attr("height", yAxisBbox.height)
+    //                 .attr("transform", "translate("+ padding.left +"," + (padding.top + titleBbox.height) + ")")
+    //                 .on("mouseover", function() {
+    //                     scaleY = currentScaleY;
+    //                 })
+    //                 .call(zoomY);
+
+    //Create invisible panel for recieve mouse event
+    let zoomXYPanel =  graph.append("rect")
                     .attr("fill-opacity", 0)
                     .attr("width", xAxisBbox.width)
-                    .attr("height", xAxisBbox.height + xAxisNameBbox.height)
-                    .attr("transform", "translate("+ xAxisBbox.x +"," + (option.height - padding.bottom - xAxisBbox.height - xAxisNameBbox.height) + ")")
-                    .call(zoomX);
-
+                    .attr("height", yAxisBbox.height)
+                    .attr("clip-path", "url(#" + clipPathId + ")")
+                    .attr("transform", "translate("+ xAxisBbox.x +"," + yAxisBbox.y + ")")
+                    .on("mousemove", function(){
+                        var transform = d3.zoomTransform(graph.node());
+                        var mousePos = transform.invert(d3.mouse(this));
+                        //var getX = __this.scaleX.invert(d3.mouse(this)[0]);
+                        //var getY = __this.scaleY.invert(d3.mouse(this)[1]);
+                        var getX = mousePos[0] + xAxisBbox.x; //__this.scaleX.invert(mousePos[0]);
+                        var getY = mousePos[1] + yAxisBbox.y;//__this.scaleY.invert(mousePos[1]);
+                        //getX = Math.round(getX * 10) / 10;
+                        //graph.append("circle").attr("cx", getX).attr("cy", getY).attr("r", 3)
+                        var nearestPoint = [];
+                        for (var i in option.series) {
+                            var getData = option.series[i];
+                            var _fpoint = getData.datas.sort(function (a, b) { 
+                                var _getX = getX;
+                                var _getY = getY;
+                                var ax = a.x;
+                                var ay = a.y;
+                                var bx = b.x;
+                                var by = b.y;
+                                if (option.x_axis.scale === "log") {
+                                    _getX = log10(getX);
+                                    ax = log10(ax);
+                                    bx = log10(bx);
+                                }
+                                
+                                if (option.y_axis.scale === "log") { 
+                                    _getY = log10(getY); 
+                                    ay = log10(ay);
+                                    by = log10(by);
+                                }
+                                ax = currentScaleX(a.x);
+                                ay = currentScaleY(a.y);
+                                bx = currentScaleX(b.x);
+                                by = currentScaleY(b.y);
+                                var dist_a = Math.sqrt(Math.pow((_getX - ax), 2) + Math.pow((_getY - ay), 2));
+                                var dist_b = Math.sqrt(Math.pow((_getX - bx), 2) + Math.pow((_getY - by), 2));
+                                return dist_a - dist_b; 
+                            });
+                            var fpoint = _fpoint[0];
+                            nearestPoint.push({
+                                uid: getData.uid,
+                                point: fpoint
+                            });
+                            var uid = getData.uid;
+                            var getLine = d3.select(".datapoint[data-uid='" + uid + "']");
+                            var getHiddenStatus = getLine.style("display");
+                            if(getHiddenStatus !== "none") {
+                                if(fpoint.x === null || fpoint.y === null) {
+                                    Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");                
+                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .x-value");                
+                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-value");                
+                                } else {
+                                    Interactive.setFocusHidden("show", ".focus[data-uid='" + uid + "']");
+                                    Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .x-value");                
+                                    Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .y-value");      
+                                    Interactive.setFocusTopic(currentScaleX(fpoint.x), currentScaleY(fpoint.y), getData.y_axis, uid, "", fpoint);
+                                }
+                            }
+                        }
+                    })
+                    .call(zoomXY);
     return option;
-
-
 }
+
 export default ScatterGraph;
