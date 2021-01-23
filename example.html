@@ -7,10 +7,11 @@
 </head>
 <body>
     <div id="main_graph"></div>
+    <div id="main_graph2"></div>
     <script src="./build/graph-builder.js">
     </script>
     <script>
-        var graph = GraphBuilder.ScatterGraph("main_graph", 
+        var scatterGraph = GraphBuilder.ScatterGraph("main_graph", 
         {
             title: {
                 text: "Ice Cream Sales vs Temperature",
@@ -91,7 +92,71 @@
                 line_height: 10
             }
         });
-        console.log(graph);
+
+        var seriesGraph = GraphBuilder.SeriesGraph("main_graph2", 
+        {
+            title: {
+                text: "Ice Cream Sales vs Temperature",
+                font_size: 18
+            },
+            width: 500,
+            height: 500,
+            padding: {
+                top: 10,
+                bottom: 10,
+                left: 10,
+                right: 20
+            },
+
+            x_axis: {
+                scale: "linear",
+                min: 10,
+                max: 26,
+                name: "Temperature"
+            },
+            y_axis: {
+                scale: "linear",
+                min: 0,
+                max: 700,
+                name: "Sales"
+            },
+            series: [
+                {
+                    uid: "series1",
+                    name: "Year 2020",
+                    color: "#FF0000",
+                    marker: {
+                        shape: "circle",
+                        size: 3,
+                        visible: true
+                    },
+                    line: {
+                        type: "dash",
+                        size: 2,
+                        visible: true
+                    },
+                    datas: [
+                        { index: 1, x: 11.9, y: 185 },
+                        { index: 2, x: 14.2, y: 215 },
+                        { index: 3, x: 15.2, y: 332 },
+                        { index: 4, x: 16.4, y: 325 },
+                        { index: 5, x: 17.2, y: 408 },
+                        { index: 6, x: 18.1, y: 421 },
+                        { index: 7, x: 18.5, y: 406 },
+                        { index: 8, x: 19.4, y: 412 },
+                        { index: 9, x: 22.1, y: 552 },
+                        { index: 10, x: 22.6, y: 445 },
+                        { index: 11, x: 23.4, y: 544 },
+                        { index: 12, x: 25.1, y: 614 }
+                    ]
+                }
+            ],
+            legend: {
+                position: "right",
+                width: 500,
+                line_height: 10
+            }
+        });
     </script>
 </body>
 </html>
