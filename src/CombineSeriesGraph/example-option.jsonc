@@ -1,0 +1,68 @@
+{
+    "title": "",
+    "width": 0,
+    "height": 0,
+    
+    "margin": {
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "left": 0
+    },
+
+    "padding": {
+        "top": 0,
+        "right": 0,
+        "bottom": 0,
+        "left": 0
+    },
+
+    "x_axis": {
+        "min": 0,
+        "max": 0,
+        "name": "",
+        "scale": "" //"log" or "linear"
+    },
+
+    "y_axis_left": {
+        "min": 0,
+        "max": 0,
+        "name": "",
+        "scale": "" //"log" or "linear"
+    },
+    "y_axis_right": {
+        "min": 0,
+        "max": 0,
+        "name": "",
+        "scale": "" //"log" or "linear"
+    },
+
+    "legend": {
+        "position": "", //"right" or "bottom"
+        "width": 0,
+        "line_height": 0
+    },
+    "zoomable": true, // true or false
+
+    "series": [
+        {
+            "uid": "",
+            "name": "",
+            "color": "",
+            "y_axis": "left", //"left" or right 
+            "marker": {
+                "shape": "circle", //"circle", "rectangle", "triangle", 
+                "size": 5,
+                "visible": true 
+            },
+            "line": {
+                "type": "solid", // solid, dash
+                "size": 3,
+                "visible": true
+            },
+            "datas": [
+                { "index": 0, "x": 0, "y": 0 }
+            ]
+        }
+    ]
+}

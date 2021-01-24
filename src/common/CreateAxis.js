@@ -1,6 +1,5 @@
 import * as d3 from "d3";
 function CreateAxis(valMin, valMax, posMin, posMax, scale) {
-    console.log(scale)
     if(scale === "linear") {
         let axis = d3.scaleLinear()
                         .domain([valMin, valMax])

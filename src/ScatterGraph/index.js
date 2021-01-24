@@ -10,8 +10,6 @@ import * as Interactive from "./Interactive";
 function ScatterGraph(elementId, option) {
     option = initializeOption(option);
     let padding = option.padding;
-
-    console.log(option);
     
     //=================================================
     //Create graph object (holding entire graph)
@@ -277,17 +275,6 @@ function ScatterGraph(elementId, option) {
                                 var ay = a.y;
                                 var bx = b.x;
                                 var by = b.y;
-                                if (option.x_axis.scale === "log") {
-                                    _getX = log10(getX);
-                                    ax = log10(ax);
-                                    bx = log10(bx);
-                                }
-                                
-                                if (option.y_axis.scale === "log") { 
-                                    _getY = log10(getY); 
-                                    ay = log10(ay);
-                                    by = log10(by);
-                                }
                                 ax = currentScaleX(a.x);
                                 ay = currentScaleY(a.y);
                                 bx = currentScaleX(b.x);
