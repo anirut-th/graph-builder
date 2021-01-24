@@ -7,7 +7,7 @@ import AddSeries from "./AddSeries";
 import { log10, Distance } from "../common/MathService";
 import * as Interactive from "./Interactive";
 
-function SeriesGraph(elementId, option) {
+function CombineSeriesGraph(elementId, option) {
     option = initializeOption(option);
     let padding = option.padding;
     
@@ -37,12 +37,16 @@ function SeriesGraph(elementId, option) {
     let min_x = option.x_axis.min;
     let max_x = option.x_axis.max;
     let name_x = option.x_axis.name;
-    let min_y = option.y_axis.min;
-    let max_y = option.y_axis.max;
-    let name_y = option.y_axis.name;
+    let min_yleft = option.y_axis_left.min;
+    let max_yleft = option.y_axis_left.max;
+    let name_yleft = option.y_axis_left.name;
+    let min_yright = option.y_axis_right.min;
+    let max_yright = option.y_axis_right.max;
+    let name_yright = option.y_axis_right.name;
 
     let scaleX = CreateAxis(min_x, max_x, padding.left, option.width - padding.right, option.x_axis.scale);
-    let scaleY = CreateAxis(min_y, max_y, option.height, padding.top, option.y_axis.scale);;
+    let scaleYLeft = CreateAxis(min_yleft, max_yleft, option.height, padding.top, option.y_axis_left.scale);
+    let scaleYRight = CreateAxis(min_yright, max_yright, option.height, padding.top, option.y_axis_right.scale);
     
     //=================================================
     // Add the X Axis
@@ -58,26 +62,41 @@ function SeriesGraph(elementId, option) {
     let xAxisNameBbox = xAxisNameElement.node().getBBox();
 
     //=================================================
-    // Add the Y Axis
+    // Add the Y Axis left
     //=================================================
-    let axisY = graph.append("g")
+    let axisYLeft = graph.append("g")
     .attr("class", "axis")
-    axisY.call(d3.axisLeft(scaleY));
-    let yAxisBbox = axisY.node().getBBox();
+    axisYLeft.call(d3.axisLeft(scaleYLeft));
+    let yAxisLeftBbox = axisYLeft.node().getBBox();
 
-    let yAxisNameElement = graph.append("text")
+    let yAxisLeftNameElement = graph.append("text")
         .attr("transform", "rotate(-90)")
         .attr("style", "text-anchor:middle; dominant-baseline: hanging;")
-    RenderTextFromHtml(yAxisNameElement, name_y);
-    let yAxisNameBbox = yAxisNameElement.node().getBBox();
+    RenderTextFromHtml(yAxisLeftNameElement, name_yleft);
+    let yAxisLeftNameBbox = yAxisLeftNameElement.node().getBBox();
     
+    //=================================================
+    // Add the Y Axis right
+    //=================================================
+    let axisYRight = graph.append("g")
+    .attr("class", "axis")
+    axisYRight.call(d3.axisRight(scaleYRight));
+    let yAxisRightBbox = axisYLeft.node().getBBox();
+
+    let yAxisRightNameElement = graph.append("text")
+        .attr("transform", "rotate(90)")
+        .attr("style", "text-anchor:middle; dominant-baseline: hanging;")
+    RenderTextFromHtml(yAxisRightNameElement, name_yright);
+    let yAxisRightNameBbox = yAxisRightNameElement.node().getBBox();
+
 
     //=================================================
     //Arrange X and Y axis Position
     //=================================================
+    // X Axis
     scaleX = CreateAxis(min_x, max_x, 
-        padding.left + yAxisNameBbox.height + yAxisBbox.width, 
-        option.width - padding.right, 
+        padding.left + yAxisLeftNameBbox.height + yAxisLeftBbox.width, 
+        option.width - padding.right - yAxisRightNameBbox.height - yAxisRightBbox.width, 
         option.x_axis.scale);
     axisX.call(d3.axisBottom(scaleX));
     let translate = { 
@@ -92,31 +111,49 @@ function SeriesGraph(elementId, option) {
     };
     xAxisNameElement.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
 
-
-    scaleY = CreateAxis(min_y, max_y, 
+    // Y Left Axis
+    scaleYLeft = CreateAxis(min_yleft, max_yleft, 
         option.height - xAxisBbox.height - xAxisNameBbox.height - padding.bottom, 
         padding.top + titleBbox.height, 
-        option.y_axis.scale);
-    axisY.call(d3.axisLeft(scaleY));
+        option.y_axis_left.scale);
+    axisYLeft.call(d3.axisLeft(scaleYLeft));
     translate = { 
-        x: padding.left + yAxisNameBbox.height + yAxisBbox.width, 
+        x: padding.left + yAxisLeftNameBbox.height + yAxisLeftBbox.width, 
         y: 0
     };
-    axisY.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
+    axisYLeft.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
 
     translate = { 
         x: -(option.height - padding.top - padding.bottom) / 2,
         y: padding.left
     };
-    yAxisNameElement.attr("transform", "rotate(-90) translate("+ translate.x +"," + translate.y + ")");
+    yAxisLeftNameElement.attr("transform", "rotate(-90) translate("+ translate.x +"," + translate.y + ")");
+
+    //Y Right Axis
+    scaleYRight = CreateAxis(min_yright, max_yright, 
+        option.height - xAxisBbox.height - xAxisNameBbox.height - padding.bottom, 
+        padding.top + titleBbox.height, 
+        option.y_axis_right.scale);
+    axisYRight.call(d3.axisRight(scaleYRight));
+    translate = { 
+        x: option.width - padding.right - yAxisRightNameBbox.height - yAxisRightBbox.width, 
+        y: 0
+    };
+    axisYRight.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
+
+    translate = { 
+        x: -(option.height - padding.top - padding.bottom) / 2,
+        y: padding.right
+    };
+    yAxisRightNameElement.attr("transform", "rotate(90) translate("+ translate.x +"," + translate.y + ")");
 
     //=================================================
     // Add clip (Area to plot the graph)
     //=================================================
     let plottingClipBbox = {
-        x: padding.left + yAxisNameBbox.height + yAxisBbox.width,
+        x: padding.left + yAxisLeftNameBbox.height + yAxisLeftBbox.width,
         y: padding.top + titleBbox.height,
-        width: option.width - (padding.left + padding.right + yAxisBbox.width + yAxisNameBbox.height),
+        width: option.width - (padding.left + padding.right + yAxisLeftBbox.width + yAxisLeftNameBbox.height + yAxisRightBbox.width + yAxisRightNameBbox.height),
         height: option.height - (padding.top + padding.bottom + titleBbox.height + xAxisBbox.height + xAxisNameBbox.height)
     };
     let clipPathId = "plotting-clip" + elementId;
@@ -135,7 +172,11 @@ function SeriesGraph(elementId, option) {
     let legends = [];
     for (let i in option.series) {
         option.series[i].uid = elementId + option.series[i].uid;
-        AddSeries(plotArea, scaleX, scaleY, option.series[i]);
+        if(option.series[i].y_axis === "left") {
+            AddSeries(plotArea, scaleX, scaleYLeft, option.series[i]);
+        } else if (option.series[i].y_axis === "right") {
+            AddSeries(plotArea, scaleX, scaleYRight, option.series[i]);
+        }
         
         if(option.series[i].name === "--no-display--") { continue; }
         legends.push({
@@ -165,69 +206,79 @@ function SeriesGraph(elementId, option) {
     //Update Axis Bbox
     xAxisBbox = axisX.node().getBBox();
     xAxisNameBbox = xAxisNameElement.node().getBBox();
-    yAxisBbox = axisY.node().getBBox();
-    yAxisNameBbox = yAxisNameElement.node().getBBox();
+    yAxisLeftBbox = axisYLeft.node().getBBox();
+    yAxisLeftNameBbox = yAxisLeftNameElement.node().getBBox();
 
     let currentScaleX = scaleX;
-    let currentScaleY = scaleY;
+    let currentScaleYLeft = scaleYLeft;
+    let currentScaleYRight = scaleYRight;
 
-    let zoomX = d3.zoom()
-    .scaleExtent([.1, 5])  // This control how much you can unzoom (x0.01) and zoom (x100)
-    .on("zoom", function(){
-        // recover the new scale
-        let _scaleX = d3.event.transform.rescaleX(scaleX);
+    // let zoomX = d3.zoom()
+    // .scaleExtent([.1, 5])  // This control how much you can unzoom (x0.01) and zoom (x100)
+    // .on("zoom", function(){
+    //     // recover the new scale
+    //     let _scaleX = d3.event.transform.rescaleX(scaleX);
 
-        // update axes with these new boundaries
-        axisX.call(d3.axisBottom(_scaleX));
-        for (let i in option.series) {
-            d3
-                .selectAll("circle[data-uid='" + option.series[i].uid + "']")
-                .attr("cx", function (d) { return _scaleX(d.x); })
-                .attr("cy", function (d) { return currentScaleY(d.y); })
-        }
-        currentScaleX = _scaleX;
-    });
+    //     // update axes with these new boundaries
+    //     axisX.call(d3.axisBottom(_scaleX));
+    //     for (let i in option.series) {
+    //         d3
+    //             .selectAll("circle[data-uid='" + option.series[i].uid + "']")
+    //             .attr("cx", function (d) { return _scaleX(d.x); })
+    //             .attr("cy", function (d) { return currentScaleYLeft(d.y); })
+    //     }
+    //     currentScaleX = _scaleX;
+    // });
     
-    let zoomY = d3.zoom()
-    .scaleExtent([.1, 5])
-    .on("zoom", function(){
-        // recover the new scale
-        let _scaleY = d3.event.transform.rescaleY(scaleY);
+    // let zoomY = d3.zoom()
+    // .scaleExtent([.1, 5])
+    // .on("zoom", function(){
+    //     // recover the new scale
+    //     let _scaleY = d3.event.transform.rescaleY(scaleYLeft);
 
-        graph.selectAll(".focus").style("display", "none");
-        // update axes with these new boundaries
-        axisY.call(d3.axisLeft(_scaleY));
-        for (let i in option.series) {
-            d3
-                .selectAll("circle[data-uid='" + option.series[i].uid + "']")
-                .attr("cx", function (d) { return currentScaleX(d.x); })
-                .attr("cy", function (d) { return _scaleY(d.y); })
-        }
-        currentScaleY = _scaleY;
-    });
+    //     graph.selectAll(".focus").style("display", "none");
+    //     // update axes with these new boundaries
+    //     axisYLeft.call(d3.axisLeft(_scaleY));
+    //     for (let i in option.series) {
+    //         d3
+    //             .selectAll("circle[data-uid='" + option.series[i].uid + "']")
+    //             .attr("cx", function (d) { return currentScaleX(d.x); })
+    //             .attr("cy", function (d) { return _scaleY(d.y); })
+    //     }
+    //     currentScaleYLeft = _scaleY;
+    // });
 
     let zoomXY = d3.zoom()
     .scaleExtent([.1, 5])
     .on("zoom", function(){
         // recover the new scale
         let _scaleX = d3.event.transform.rescaleX(scaleX);
-        let _scaleY = d3.event.transform.rescaleY(scaleY);
+        let _scaleYLeft = d3.event.transform.rescaleY(scaleYLeft);
+        let _scaleYRight = d3.event.transform.rescaleY(scaleYRight);
         
         graph.selectAll(".focus").style("display", "none");
 
         // update axes with these new boundaries
         axisX.call(d3.axisBottom(_scaleX));
-        axisY.call(d3.axisLeft(_scaleY));
+        axisYLeft.call(d3.axisLeft(_scaleYLeft));
+        axisYRight.call(d3.axisRight(_scaleYRight));
 
         for (let i in option.series) {
+            let _tempScaleY = null;
+            if(option.series[i].y_axis === "left") {
+                _tempScaleY = _scaleYLeft;
+            } else if (option.series[i].y_axis === "right") {
+                _tempScaleY = _scaleYRight;
+            }
+
             let lineGenerator = d3.line()
-                        .x(function (d) {
-                            return _scaleX(d.x)
-                        })
-                        .y(function (d) {
-                            return _scaleY(d.y)
-                        });
-            
+                            .x(function (d) {
+                                return _scaleX(d.x)
+                            })
+                            .y(function (d) {
+                                return _tempScaleY(d.y)
+                            });
+                
             let definedData = option.series[i].datas.sort(function (a, b) { return a.index - b.index });
             let dataPath = lineGenerator(definedData);
             d3
@@ -238,9 +289,10 @@ function SeriesGraph(elementId, option) {
             d3
                 .selectAll("circle[data-uid='" + option.series[i].uid + "']")
                 .attr("cx", function (d) { return _scaleX(d.x); })
-                .attr("cy", function (d) { return _scaleY(d.y); })
+                .attr("cy", function (d) { return _tempScaleY(d.y); })
         }
-        currentScaleY = _scaleY;
+        currentScaleYLeft = _scaleYLeft;
+        currentScaleYRight = _scaleYRight;
         currentScaleX = _scaleX;
     });
 
@@ -256,11 +308,11 @@ function SeriesGraph(elementId, option) {
 
     // let zoomYPanel =  graph.append("rect")
     //                 .attr("fill-opacity", 0)
-    //                 .attr("width", yAxisBbox.width + yAxisNameBbox.height)
-    //                 .attr("height", yAxisBbox.height)
+    //                 .attr("width", yAxisLeftBbox.width + yAxisLeftNameBbox.height)
+    //                 .attr("height", yAxisLeftBbox.height)
     //                 .attr("transform", "translate("+ padding.left +"," + (padding.top + titleBbox.height) + ")")
     //                 .on("mouseover", function() {
-    //                     scaleY = currentScaleY;
+    //                     scaleYLeft = currentScaleYLeft;
     //                 })
     //                 .call(zoomY);
 
@@ -268,20 +320,26 @@ function SeriesGraph(elementId, option) {
     let zoomXYPanel =  graph.append("rect")
                     .attr("fill-opacity", 0)
                     .attr("width", xAxisBbox.width)
-                    .attr("height", yAxisBbox.height)
+                    .attr("height", yAxisLeftBbox.height)
                     .attr("clip-path", "url(#" + clipPathId + ")")
-                    .attr("transform", "translate("+ xAxisBbox.x +"," + yAxisBbox.y + ")")
+                    .attr("transform", "translate("+ xAxisBbox.x +"," + yAxisLeftBbox.y + ")")
                     .on("mousemove", function(){
                         let transform = d3.zoomTransform(graph.node());
                         let mousePos = transform.invert(d3.mouse(this));
-                        //let getX = __this.scaleX.invert(d3.mouse(this)[0]);
-                        //let getY = __this.scaleY.invert(d3.mouse(this)[1]);
-                        let getX = mousePos[0] + xAxisBbox.x; //__this.scaleX.invert(mousePos[0]);
-                        let getY = mousePos[1] + yAxisBbox.y;//__this.scaleY.invert(mousePos[1]);
-                        //getX = Math.round(getX * 10) / 10;
+                        let getX = mousePos[0] + xAxisBbox.x;
+                        let getY = mousePos[1] + yAxisLeftBbox.y;
+
                         //graph.append("circle").attr("cx", getX).attr("cy", getY).attr("r", 3)
+
                         let nearestPoint = [];
                         for (let i in option.series) {
+                            let _tempScaleY = null;
+                            if(option.series[i].y_axis === "left") {
+                                _tempScaleY = currentScaleYLeft;
+                            } else if (option.series[i].y_axis === "right") {
+                                _tempScaleY = currentScaleYRight;
+                            }
+
                             let getData = option.series[i];
                             let _fpoint = getData.datas.sort(function (a, b) { 
                                 let _getX = getX;
@@ -291,9 +349,9 @@ function SeriesGraph(elementId, option) {
                                 let bx = b.x;
                                 let by = b.y;
                                 ax = currentScaleX(a.x);
-                                ay = currentScaleY(a.y);
+                                ay = _tempScaleY(a.y);
                                 bx = currentScaleX(b.x);
-                                by = currentScaleY(b.y);
+                                by = _tempScaleY(b.y);
                                 let dist_a = Math.sqrt(Math.pow((_getX - ax), 2) + Math.pow((_getY - ay), 2));
                                 let dist_b = Math.sqrt(Math.pow((_getX - bx), 2) + Math.pow((_getY - by), 2));
                                 return dist_a - dist_b; 
@@ -308,14 +366,16 @@ function SeriesGraph(elementId, option) {
                             let getHiddenStatus = getLine.style("display");
                             if(getHiddenStatus !== "none") {
                                 if(fpoint.x === null || fpoint.y === null) {
-                                    Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");                
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .x-value");                
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-value");                
+                                    Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");
+                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .x-value");
+                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-left-value");
+                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-right-value");
                                 } else {
                                     Interactive.setFocusHidden("show", ".focus[data-uid='" + uid + "']");
-                                    Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .x-value");                
-                                    Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .y-value");      
-                                    Interactive.setFocusTopic(currentScaleX(fpoint.x), currentScaleY(fpoint.y), getData.y_axis, uid, "", fpoint);
+                                    Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .x-value");
+                                    Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .y-left-value");
+                                    Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .y-right-value");
+                                    Interactive.setFocusTopic(currentScaleX(fpoint.x), _tempScaleY(fpoint.y), getData.y_axis, uid, fpoint);
                                 }
                             }
                         }
@@ -324,4 +384,4 @@ function SeriesGraph(elementId, option) {
     return option;
 }
 
-export default SeriesGraph;
+export default CombineSeriesGraph;
