@@ -5,7 +5,8 @@
   "main": "build/graph-builder.js",
   "scripts": {
     "build": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "build-prod": "webpack --mode=production"
   },
   "repository": {
     "type": "git",

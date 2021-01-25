@@ -85,7 +85,7 @@ function CombineSeriesGraph(elementId, option) {
 
     let yAxisRightNameElement = graph.append("text")
         .attr("transform", "rotate(90)")
-        .attr("style", "text-anchor:middle; dominant-baseline: hanging;")
+        .attr("style", "text-anchor:middle; dominant-baseline: auto;")
     RenderTextFromHtml(yAxisRightNameElement, name_yright);
     let yAxisRightNameBbox = yAxisRightNameElement.node().getBBox();
 
@@ -124,10 +124,10 @@ function CombineSeriesGraph(elementId, option) {
     axisYLeft.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
 
     translate = { 
-        x: -(option.height - padding.top - padding.bottom) / 2,
-        y: padding.left
+        x: padding.left,
+        y: (option.height - padding.top - padding.bottom) / 2
     };
-    yAxisLeftNameElement.attr("transform", "rotate(-90) translate("+ translate.x +"," + translate.y + ")");
+    yAxisLeftNameElement.attr("transform", "translate("+ translate.x +"," + translate.y + ") rotate(-90)");
 
     //Y Right Axis
     scaleYRight = CreateAxis(min_yright, max_yright, 
@@ -140,12 +140,12 @@ function CombineSeriesGraph(elementId, option) {
         y: 0
     };
     axisYRight.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
-
+    
     translate = { 
-        x: -(option.height - padding.top - padding.bottom) / 2,
-        y: padding.right
+        x: option.width - padding.right,
+        y: (option.height - padding.top - padding.bottom) / 2
     };
-    yAxisRightNameElement.attr("transform", "rotate(90) translate("+ translate.x +"," + translate.y + ")");
+    yAxisRightNameElement.attr("transform", "translate("+ translate.x +"," + translate.y + ") rotate(90)");
 
     //=================================================
     // Add clip (Area to plot the graph)
@@ -208,6 +208,8 @@ function CombineSeriesGraph(elementId, option) {
     xAxisNameBbox = xAxisNameElement.node().getBBox();
     yAxisLeftBbox = axisYLeft.node().getBBox();
     yAxisLeftNameBbox = yAxisLeftNameElement.node().getBBox();
+    yAxisRightBbox = axisYRight.node().getBBox();
+    yAxisRightNameBbox = yAxisRightNameElement.node().getBBox();
 
     let currentScaleX = scaleX;
     let currentScaleYLeft = scaleYLeft;

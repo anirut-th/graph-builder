@@ -8,6 +8,11 @@ import { log10, Distance } from "../common/MathService";
 import * as Interactive from "./Interactive";
 
 function ScatterGraph(elementId, option) {
+    let formatTick = function (d) {
+        //var num = numeral(d);
+        return d.toString();//num.format('0.0');
+    };
+
     option = initializeOption(option);
     let padding = option.padding;
     
@@ -79,7 +84,11 @@ function ScatterGraph(elementId, option) {
         padding.left + yAxisNameBbox.height + yAxisBbox.width, 
         option.width - padding.right, 
         option.x_axis.scale);
-    axisX.call(d3.axisBottom(scaleX));
+    if(option.x_axis.scale === "log") { 
+        axisX.call(d3.axisBottom(scaleX).ticks(max_x, formatTick)); 
+    }
+    else { axisX.call(d3.axisBottom(scaleX)); }
+
     let translate = { 
         x: 0, 
         y: option.height - padding.bottom - xAxisBbox.height - xAxisNameBbox.height 
@@ -97,7 +106,11 @@ function ScatterGraph(elementId, option) {
         option.height - xAxisBbox.height - xAxisNameBbox.height - padding.bottom, 
         padding.top + titleBbox.height, 
         option.y_axis.scale);
-    axisY.call(d3.axisLeft(scaleY));
+    if(option.y_axis.scale === "log") {
+        axisY.call(d3.axisLeft(scaleY).ticks(max_y, formatTick));
+    } else {
+        axisY.call(d3.axisLeft(scaleY));
+    }
     translate = { 
         x: padding.left + yAxisNameBbox.height + yAxisBbox.width, 
         y: 0
@@ -105,10 +118,10 @@ function ScatterGraph(elementId, option) {
     axisY.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
 
     translate = { 
-        x: -(option.height - padding.top - padding.bottom) / 2,
-        y: padding.left
+        x: padding.left,
+        y: (option.height - padding.top - padding.bottom) / 2
     };
-    yAxisNameElement.attr("transform", "rotate(-90) translate("+ translate.x +"," + translate.y + ")");
+    yAxisNameElement.attr("transform", "translate("+ translate.x +"," + translate.y + ") rotate(-90)");
 
     //=================================================
     // Add clip (Area to plot the graph)
@@ -171,41 +184,6 @@ function ScatterGraph(elementId, option) {
     let currentScaleX = scaleX;
     let currentScaleY = scaleY;
 
-    let zoomX = d3.zoom()
-    .scaleExtent([.1, 5])  // This control how much you can unzoom (x0.01) and zoom (x100)
-    .on("zoom", function(){
-        // recover the new scale
-        let _scaleX = d3.event.transform.rescaleX(scaleX);
-
-        // update axes with these new boundaries
-        axisX.call(d3.axisBottom(_scaleX));
-        for (var i in option.series) {
-            d3
-                .selectAll("circle[data-uid='" + option.series[i].uid + "']")
-                .attr("cx", function (d) { return _scaleX(d.x); })
-                .attr("cy", function (d) { return currentScaleY(d.y); })
-        }
-        currentScaleX = _scaleX;
-    });
-    
-    let zoomY = d3.zoom()
-    .scaleExtent([.1, 5])
-    .on("zoom", function(){
-        // recover the new scale
-        let _scaleY = d3.event.transform.rescaleY(scaleY);
-
-        graph.selectAll(".focus").style("display", "none");
-        // update axes with these new boundaries
-        axisY.call(d3.axisLeft(_scaleY));
-        for (var i in option.series) {
-            d3
-                .selectAll("circle[data-uid='" + option.series[i].uid + "']")
-                .attr("cx", function (d) { return currentScaleX(d.x); })
-                .attr("cy", function (d) { return _scaleY(d.y); })
-        }
-        currentScaleY = _scaleY;
-    });
-
     let zoomXY = d3.zoom()
     .scaleExtent([.1, 5])
     .on("zoom", function(){
@@ -216,8 +194,17 @@ function ScatterGraph(elementId, option) {
         graph.selectAll(".focus").style("display", "none");
 
         // update axes with these new boundaries
-        axisX.call(d3.axisBottom(_scaleX));
-        axisY.call(d3.axisLeft(_scaleY));
+        if(option.x_axis.scale === "log") { 
+            axisX.call(d3.axisBottom(_scaleX).ticks(max_x, formatTick)); 
+        }
+        else { axisX.call(d3.axisBottom(_scaleX)); }
+
+        if(option.y_axis.scale === "log") {
+            axisY.call(d3.axisLeft(_scaleY).ticks(max_y, formatTick));
+        } else {
+            axisY.call(d3.axisLeft(_scaleY));
+        }
+
 
         for (var i in option.series) {
             d3

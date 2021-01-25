@@ -105,10 +105,10 @@ function SeriesGraph(elementId, option) {
     axisY.attr("transform", "translate("+ translate.x +"," + translate.y + ")");
 
     translate = { 
-        x: -(option.height - padding.top - padding.bottom) / 2,
-        y: padding.left
+        x: padding.left,
+        y: (option.height - padding.top - padding.bottom) / 2
     };
-    yAxisNameElement.attr("transform", "rotate(-90) translate("+ translate.x +"," + translate.y + ")");
+    yAxisNameElement.attr("transform", "translate("+ translate.x +"," + translate.y + ") rotate(-90)");
 
     //=================================================
     // Add clip (Area to plot the graph)
