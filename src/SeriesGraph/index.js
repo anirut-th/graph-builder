@@ -151,17 +151,6 @@ function SeriesGraph(elementId, option) {
     let legendArea = CreateLegend(viewport, graph, option, legends);
     let legentAreaBbox = legendArea.node().getBBox();
 
-    for (let i in option.series) {
-        Interactive.setFocus(
-            plotArea,
-            legendArea.select(".legend-item[data-uid='" + option.series[i].uid + "']"),
-            option.series[i].uid,
-            option.series[i].color,
-            option.series[i].marker.size,
-            elementId
-        );
-    }
-
     //Update Axis Bbox
     xAxisBbox = axisX.node().getBBox();
     xAxisNameBbox = xAxisNameElement.node().getBBox();
@@ -265,12 +254,16 @@ function SeriesGraph(elementId, option) {
     //                 .call(zoomY);
 
     //Create invisible panel for recieve mouse event
+    translate = { 
+        x: yAxisNameBbox.height + yAxisBbox.width + padding.left, 
+        y: padding.top + titleBbox.height
+    };
     let zoomXYPanel =  graph.append("rect")
                     .attr("fill-opacity", 0)
                     .attr("width", xAxisBbox.width)
-                    .attr("height", yAxisBbox.height)
-                    .attr("clip-path", "url(#" + clipPathId + ")")
-                    .attr("transform", "translate("+ xAxisBbox.x +"," + yAxisBbox.y + ")")
+                    .attr("height", yAxisBbox.height - padding.bottom)
+                    //.attr("clip-path", "url(#" + clipPathId + ")")
+                    .attr("transform", "translate("+ translate.x +"," + translate.y + ")")
                     .on("mousemove", function(){
                         let transform = d3.zoomTransform(graph.node());
                         let mousePos = transform.invert(d3.mouse(this));
@@ -305,22 +298,33 @@ function SeriesGraph(elementId, option) {
                             });
                             let uid = getData.uid;
                             let getLine = d3.select(".datapoint[data-uid='" + uid + "']");
-                            let getHiddenStatus = getLine.style("display");
-                            if(getHiddenStatus !== "none") {
+                            let getHiddenStatus = (plotArea.selectAll(".focus[data-uid='" + uid + "']").select("circle").attr("fill-opacity") == 0);
+                            if(getHiddenStatus === false) {
                                 if(fpoint.x === null || fpoint.y === null) {
-                                    Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");                
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .x-value");                
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-value");                
+                                    Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");            
                                 } else {
                                     Interactive.setFocusHidden("show", ".focus[data-uid='" + uid + "']");
                                     Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .x-value");                
                                     Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .y-value");      
                                     Interactive.setFocusTopic(currentScaleX(fpoint.x), currentScaleY(fpoint.y), getData.y_axis, uid, "", fpoint);
                                 }
+                            } else {
+                                d3.select(".legend-item[data-uid='" + uid + "'] .y-value").text("-");
+                                d3.select(".legend-item[data-uid='" + uid + "'] .x-value").text("-");
                             }
                         }
                     })
                     .call(zoomXY);
+    for (let i in option.series) {
+        Interactive.setFocus(
+            plotArea,
+            legendArea.select(".legend-item[data-uid='" + option.series[i].uid + "']"),
+            option.series[i].uid,
+            option.series[i].color,
+            option.series[i].marker.size,
+            elementId
+        );
+    }
     return option;
 }
 

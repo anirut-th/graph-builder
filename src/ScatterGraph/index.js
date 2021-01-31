@@ -9,7 +9,7 @@ import * as Interactive from "./Interactive";
 
 function ScatterGraph(elementId, option) {
     let formatTick = function (d) {
-        //var num = numeral(d);
+        //let num = numeral(d);
         return d.toString();//num.format('0.0');
     };
 
@@ -163,8 +163,7 @@ function ScatterGraph(elementId, option) {
     //=================================================
     let legendArea = CreateLegend(viewport, graph, option, legends);
     let legentAreaBbox = legendArea.node().getBBox();
-
-    for (var i in option.series) {
+    for (let i in option.series) {
         Interactive.setFocus(
             plotArea,
             legendArea.select(".legend-item[data-uid='" + option.series[i].uid + "']"),
@@ -206,7 +205,7 @@ function ScatterGraph(elementId, option) {
         }
 
 
-        for (var i in option.series) {
+        for (let i in option.series) {
             d3
                 .selectAll("circle[data-uid='" + option.series[i].uid + "']")
                 .attr("cx", function (d) { return _scaleX(d.x); })
@@ -236,64 +235,68 @@ function ScatterGraph(elementId, option) {
     //                 })
     //                 .call(zoomY);
 
+    translate = { 
+        x: yAxisNameBbox.height + yAxisBbox.width + padding.left, 
+        y: padding.top + titleBbox.height
+    };
     //Create invisible panel for recieve mouse event
     let zoomXYPanel =  graph.append("rect")
                     .attr("fill-opacity", 0)
                     .attr("width", xAxisBbox.width)
-                    .attr("height", yAxisBbox.height)
-                    .attr("clip-path", "url(#" + clipPathId + ")")
-                    .attr("transform", "translate("+ xAxisBbox.x +"," + yAxisBbox.y + ")")
+                    .attr("height", yAxisBbox.height - padding.bottom)
+                    //.attr("clip-path", "url(#" + clipPathId + ")")
+                    .attr("transform", "translate("+ translate.x +"," + translate.y + ")")
                     .on("mousemove", function(){
-                        var transform = d3.zoomTransform(graph.node());
-                        var mousePos = transform.invert(d3.mouse(this));
-                        //var getX = __this.scaleX.invert(d3.mouse(this)[0]);
-                        //var getY = __this.scaleY.invert(d3.mouse(this)[1]);
-                        var getX = mousePos[0] + xAxisBbox.x; //__this.scaleX.invert(mousePos[0]);
-                        var getY = mousePos[1] + yAxisBbox.y;//__this.scaleY.invert(mousePos[1]);
+                        let transform = d3.zoomTransform(graph.node());
+                        let mousePos = transform.invert(d3.mouse(this));
+                        //let getX = __this.scaleX.invert(d3.mouse(this)[0]);
+                        //let getY = __this.scaleY.invert(d3.mouse(this)[1]);
+                        let getX = mousePos[0] + xAxisBbox.x; //__this.scaleX.invert(mousePos[0]);
+                        let getY = mousePos[1] + yAxisBbox.y;//__this.scaleY.invert(mousePos[1]);
                         //getX = Math.round(getX * 10) / 10;
                         //graph.append("circle").attr("cx", getX).attr("cy", getY).attr("r", 3)
-                        var nearestPoint = [];
-                        for (var i in option.series) {
-                            var getData = option.series[i];
-                            var _fpoint = getData.datas.sort(function (a, b) { 
-                                var _getX = getX;
-                                var _getY = getY;
-                                var ax = a.x;
-                                var ay = a.y;
-                                var bx = b.x;
-                                var by = b.y;
+                        let nearestPoint = [];
+                        for (let i in option.series) {
+                            let getData = option.series[i];
+                            let _fpoint = getData.datas.sort(function (a, b) { 
+                                let _getX = getX;
+                                let _getY = getY;
+                                let ax = a.x;
+                                let ay = a.y;
+                                let bx = b.x;
+                                let by = b.y;
                                 ax = currentScaleX(a.x);
                                 ay = currentScaleY(a.y);
                                 bx = currentScaleX(b.x);
                                 by = currentScaleY(b.y);
-                                var dist_a = Math.sqrt(Math.pow((_getX - ax), 2) + Math.pow((_getY - ay), 2));
-                                var dist_b = Math.sqrt(Math.pow((_getX - bx), 2) + Math.pow((_getY - by), 2));
+                                let dist_a = Math.sqrt(Math.pow((_getX - ax), 2) + Math.pow((_getY - ay), 2));
+                                let dist_b = Math.sqrt(Math.pow((_getX - bx), 2) + Math.pow((_getY - by), 2));
                                 return dist_a - dist_b; 
                             });
-                            var fpoint = _fpoint[0];
+                            let fpoint = _fpoint[0];
                             nearestPoint.push({
                                 uid: getData.uid,
                                 point: fpoint
                             });
-                            var uid = getData.uid;
-                            var getLine = d3.select(".datapoint[data-uid='" + uid + "']");
-                            var getHiddenStatus = getLine.style("display");
-                            if(getHiddenStatus !== "none") {
+                            let uid = getData.uid;
+                            let getLine = d3.select(".datapoint[data-uid='" + uid + "']");
+                            let getHiddenStatus = (plotArea.selectAll(".focus[data-uid='" + uid + "']").select("circle").attr("fill-opacity") == 0);
+                            if(getHiddenStatus === false) {
                                 if(fpoint.x === null || fpoint.y === null) {
-                                    Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");                
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .x-value");                
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-value");                
+                                    Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");              
                                 } else {
                                     Interactive.setFocusHidden("show", ".focus[data-uid='" + uid + "']");
                                     Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .x-value");                
                                     Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .y-value");      
                                     Interactive.setFocusTopic(currentScaleX(fpoint.x), currentScaleY(fpoint.y), getData.y_axis, uid, "", fpoint);
                                 }
+                            } else {
+                                d3.select(".legend-item[data-uid='" + uid + "'] .y-value").text("-");
+                                d3.select(".legend-item[data-uid='" + uid + "'] .x-value").text("-");
                             }
                         }
-                    })
-                    .call(zoomXY);
-    return option;
+                    }).call(zoomXY);
+    return option; 
 }
 
 export default ScatterGraph;

@@ -12,7 +12,7 @@ function setFocusHidden(type, uid) {
 }
 
 function setFocusTopic(posX, posY, yAxisType, uid, data) {
-    if (data.x === null || data.y === null) {
+    if (data.x === null || data.y === null || data.x === "-" || data.y === "-") {
         return;
     }
     var getFocus = d3.select(".focus[data-uid='" + uid + "']");
