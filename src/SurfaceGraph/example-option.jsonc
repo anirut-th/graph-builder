@@ -1,0 +1,46 @@
+{
+    "title": "",
+    "width": 0,
+    "height": 0,
+
+    "x_axis": {
+        "tick_size": 0,
+        "tick_array": 0,
+        "name": ""
+    },
+
+    "y_axis": {
+        "min": 0,
+        "max": 0,
+        "tick_size": 0,
+        "name": "",
+        "scale": 0
+    },
+    "z_axis": {
+        "tick_size": 0,
+        "tick_array": 0,
+        "name": ""
+    },
+
+    "datas": [
+        { "x": 0, "y": 0, "z": 0 }
+    ],
+    "data_category": [
+        {"name": "", "lower": 0, "upper": 0 }, 
+    ],
+
+    "showgrid": true,
+    "showticklabel": { 
+        "x":true,
+        "y":true,
+        "z":true,
+    },
+    "color": "#00ff00",
+
+    "camera_option": {
+        "init_pos": {"x":0, "y":0,"z":0},
+        "lookat_pos": {"x":0, "y":0, "z":0} ,
+        "enable_rotate": true
+    },
+    "iscontour": true //effect to camera rotation & label position
+}

@@ -24,6 +24,9 @@ function AddSeries(plotArea, scaleX, scaleY, series) {
             .attr("cy", function (d) { return scaleY(d.y); })
             .attr("dx", function (d) { return d.x; })
             .attr("dy", function (d) { return d.y; })
+            .on("click", function(d) {
+                console.log(d);
+            })
     }
 }
 

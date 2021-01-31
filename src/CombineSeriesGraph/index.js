@@ -318,13 +318,17 @@ function CombineSeriesGraph(elementId, option) {
     //                 })
     //                 .call(zoomY);
 
+    translate = { 
+        x: yAxisLeftNameBbox.height + yAxisLeftBbox.width + padding.left, 
+        y: padding.top + titleBbox.height
+    };
     //Create invisible panel for recieve mouse event
     let zoomXYPanel =  graph.append("rect")
-                    .attr("fill-opacity", 0)
+                    .attr("fill-opacity", 0.5)
                     .attr("width", xAxisBbox.width)
-                    .attr("height", yAxisLeftBbox.height)
-                    .attr("clip-path", "url(#" + clipPathId + ")")
-                    .attr("transform", "translate("+ xAxisBbox.x +"," + yAxisLeftBbox.y + ")")
+                    .attr("height", yAxisLeftBbox.height - padding.top)
+                    //.attr("clip-path", "url(#" + clipPathId + ")")
+                    .attr("transform", "translate("+ translate.x +"," + translate.y + ")")
                     .on("mousemove", function(){
                         let transform = d3.zoomTransform(graph.node());
                         let mousePos = transform.invert(d3.mouse(this));
@@ -365,13 +369,10 @@ function CombineSeriesGraph(elementId, option) {
                             });
                             let uid = getData.uid;
                             let getLine = d3.select(".datapoint[data-uid='" + uid + "']");
-                            let getHiddenStatus = getLine.style("display");
-                            if(getHiddenStatus !== "none") {
+                            let getHiddenStatus = (plotArea.selectAll(".focus[data-uid='" + uid + "']").select("circle").attr("fill-opacity") == 0)
+                            if(getHiddenStatus === false) {
                                 if(fpoint.x === null || fpoint.y === null) {
                                     Interactive.setFocusHidden("hide", ".focus[data-uid='" + uid + "']");
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .x-value");
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-left-value");
-                                    Interactive.setFocusTextHidden(".legend-item[data-uid='" + uid + "'] .y-right-value");
                                 } else {
                                     Interactive.setFocusHidden("show", ".focus[data-uid='" + uid + "']");
                                     Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .x-value");
@@ -379,6 +380,10 @@ function CombineSeriesGraph(elementId, option) {
                                     Interactive.setFocusHidden("show", ".legend-item[data-uid='" + uid + "'] .y-right-value");
                                     Interactive.setFocusTopic(currentScaleX(fpoint.x), _tempScaleY(fpoint.y), getData.y_axis, uid, fpoint);
                                 }
+                            } else {
+                                d3.select(".legend-item[data-uid='" + uid + "'] .y-left-value").text("-");
+                                d3.select(".legend-item[data-uid='" + uid + "'] .y-right-value").text("-");
+                                d3.select(".legend-item[data-uid='" + uid + "'] .x-value").text("-");
                             }
                         }
                     })

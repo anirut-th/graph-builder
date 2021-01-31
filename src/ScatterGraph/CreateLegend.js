@@ -1,4 +1,5 @@
 import RenderTextFromHtml from "../common/RenderTextFromHtml";
+import * as d3 from "d3";
 
 function CreateLegend(viewport, graph, option, legendData) {
     let legendArea = graph.append("g").attr("class", "legend");
@@ -69,6 +70,9 @@ function CreateLegend(viewport, graph, option, legendData) {
 
     //Generate Legend items.
     for (let i in legendData) {
+        let series = option.series.find(function(s) {
+            return s.uid === legendData[i].uid;
+        });
         let legendItems = legendArea.append("g")
             .attr("class", "legend-item")
             .attr("transform", "translate(0, " + (20 + (i * 30)) + ")")
@@ -83,6 +87,10 @@ function CreateLegend(viewport, graph, option, legendData) {
             .attr("data-color", legendData[i].color)
             .style("cursor", "pointer")
             .style("fill", legendData[i].color)
+            .on("click", function () {
+                var uid = legendData[i].uid;
+                ToggleHiddenGraph(graph, uid, legendData[i].color);
+            });
 
         let legendName = legendItems.append("text")
             .attr("x", 30)
@@ -91,6 +99,10 @@ function CreateLegend(viewport, graph, option, legendData) {
             .attr("class", "legend-name")
             .attr("data-uid", legendData[i].uid )
             .attr("data-color", legendData[i].color)
+            .on("click", function () {
+                var uid = legendData[i].uid;
+                ToggleHiddenGraph(graph, uid, legendData[i].color);
+            });
         RenderTextFromHtml(legendName, legendData[i].name);
 
         legendItems.append("text")
@@ -113,5 +125,27 @@ function CreateLegend(viewport, graph, option, legendData) {
 
     return legendArea;
 }
+
+function ToggleHiddenGraph (graph, uid, color) {
+    let plotArea = graph.select(".plot");
+    let legend_icon = graph.select(".legend .legend-item rect[data-uid='" + uid + "']");
+
+    if(plotArea.select(".datapoint[data-uid='" + uid + "']").attr("fill-opacity") == 0) {
+        plotArea.selectAll(".datapoint[data-uid='" + uid + "']").attr("fill-opacity", 1);
+    } else {
+        plotArea.selectAll(".datapoint[data-uid='" + uid + "']").attr("fill-opacity", 0)
+    }
+
+    if(plotArea.selectAll(".focus[data-uid='" + uid + "']").select("circle").attr("fill-opacity") == 0) {
+        plotArea.selectAll(".focus[data-uid='" + uid + "']").selectAll("circle").attr("fill-opacity", 1);
+        legend_icon.style("fill", color);
+    } else {
+        plotArea.selectAll(".focus[data-uid='" + uid + "']").selectAll("circle").attr("fill-opacity", 0);
+        legend_icon.style("fill", "#cccccc");
+        d3.select(".legend-item[data-uid='" + uid + "'] .y-value").text("-");
+        d3.select(".legend-item[data-uid='" + uid + "'] .x-value").text("-");
+    }
+}
+
 
 export default CreateLegend;
